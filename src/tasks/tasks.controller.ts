@@ -6,32 +6,42 @@ import {  TaskStatus } from './task-status-enum';
 import { Task } from './task.entity'
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
+import { Logger } from '@nestjs/common';
 // import e from 'express';
 import { TaskStatusValidation } from './pipe/task-status-validation.pipe';
 import { AuthGuard } from '@nestjs/passport';
-
+import { User } from 'src/auth/user.entity';
+import { GetUser } from 'src/auth/get-user.decorator';
 
 @Controller('tasks')
 @UseGuards(AuthGuard())
 export class TasksController {
+ private logger = new Logger('TasksController')
   constructor(private tasksServices: TasksService) {}
   @Get()
-  async getTasks(@Query() filterDto:GetTasksFilterDto):Promise<Task[]>{
-    return this.tasksServices.getTasks(filterDto)
+  async getTasks(@Query() filterDto:GetTasksFilterDto, 
+  @GetUser() user:User
+  ):Promise<Task[]>{
+    this.logger.verbose(`User ${user.username} retriving all the task ! Filters :${JSON.stringify(filterDto)}`)
+    return this.tasksServices.getTasks(filterDto , user)
  
   }
 
 
   @Get('/:id')
-  getTaskById(@Param('id') id: number):Promise <Task> {
-    return this.tasksServices.getTaskById(id);
+  getTaskById(@Param('id') id: number , 
+  @GetUser() user:User):Promise <Task> {
+    return this.tasksServices.getTaskById(id , user);
   }
 
   @Post()
   @UsePipes(ValidationPipe)
-  createtask(@Body() CreateTaskDto: CreateTaskDto):Promise <Task> {
+  createtask(@Body() CreateTaskDto: CreateTaskDto , 
+  @GetUser() user:User
+  ):Promise <Task> {
     console.log('create task api called !')
-    return this.tasksServices.createTask(CreateTaskDto);
+    console.log('user in controller===?' , user)
+    return this.tasksServices.createTask(CreateTaskDto , user);
   }
 
   @Delete('/:id')
@@ -42,7 +52,8 @@ export class TasksController {
   @Patch('/:id/status')
   updateTaskStatus(
     @Param('id' , ParseIntPipe) id: number, 
-    @Body('status' , TaskStatusValidation ) status: TaskStatus): Promise<Task> {
-    return this.tasksServices.updateTask(id, status);
+    @Body('status' , TaskStatusValidation ) status: TaskStatus ,
+    @GetUser() user:User): Promise<Task> {
+    return this.tasksServices.updateTask(id, status , user);
   }
 }
