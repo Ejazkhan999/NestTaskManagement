@@ -4,10 +4,10 @@ import * as config from 'config';
 const dbConfig = config.get('db');
 export const typeOrmConfig : TypeOrmModuleOptions = {
 type:'postgres',
-host:'localhost',
+host:'XXXXX',
 port:dbConfig.port,
-username:'postgres',
-password:'qwer1234',
+username:'XXXXX',
+password:'YYYYYYYY',
 database:dbConfig.database,
 entities: [__dirname + '/../**/*.entity.{js,ts}'] ,
 synchronize:true
